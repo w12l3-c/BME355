@@ -31,22 +31,24 @@ function u = FESController(x, r, y, K, kP)
 %
 
     % Compute the error between reference and measured force
-    e = r - y;
+    error = r - y;
     
-    % Compute the state feedback term (note: -K*x gives a 2x1 vector)
+    % Compute the state feedback term
     % Then premultiply by [1 -1] to get a scalar intermediate control signal.
     u_intermediate = [1, -1] * (-K * x);
     
-    % Add the proportional term based on force error
-    uc = u_intermediate + kP * e;
+    % Add the proportional term based on force error (The sum circle)
+    uc = u_intermediate + kP * error;
     
     % Apply switching rule to separate stimulation for flexor and extensor:
     if uc >= 0
-        uf = uc;  % flexor receives positive control signal
-        ue = 0;   % extensor is not stimulated
+        % flexor receives positive control signal
+        uf = uc;  
+        ue = 0;   
     else
+        % extensor receives the magnitude of the negative control signal
         uf = 0; 
-        ue = abs(uc); % extensor receives the absolute value of the negative control signal
+        ue = abs(uc); 
     end
     
     % Output the FES input vector [uf; ue]
