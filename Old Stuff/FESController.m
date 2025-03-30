@@ -1,7 +1,7 @@
-function [PW_f, PW_e] = FESController(x_hat, r, y, K, kP)
+function u = FESController(x, r, y, K, kP)
 % FESController - Compute FES control input for an antagonist muscle pair.
 %
-% Syntax:  u = FESController(x_hat, r, y, K, kP)
+% Syntax:  u = FESController(x, r, y, K, kP)
 %
 % Inputs:
 %    x  - State vector (4x1) from the Hammerstein muscle model (or its estimate)
@@ -35,23 +35,22 @@ function [PW_f, PW_e] = FESController(x_hat, r, y, K, kP)
     
     % Compute the state feedback term
     % Then premultiply by [1 -1] to get a scalar intermediate control signal.
-    u_intermediate = [1, -1] * (-K * x_hat); % (1,1)
+    u_intermediate = [1, -1] * (-K * x);
     
     % Add the proportional term based on force error (The sum circle)
-    uc = u_intermediate + (kP * error); 
+    uc = u_intermediate + kP * error;
     
     % Apply switching rule to separate stimulation for flexor and extensor:
-
     if uc >= 0
         % flexor receives positive control signal
         uf = uc;  
-        ue = 0;
+        ue = 0;   
     else
         % extensor receives the magnitude of the negative control signal
         uf = 0; 
         ue = abs(uc); 
     end
-
-    [PW_f, PW_e] = InverseIRC(uf, ue);
-
+    
+    % Output the FES input vector [uf; ue]
+    u = [uf; ue];
 end
