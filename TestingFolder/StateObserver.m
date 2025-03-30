@@ -9,18 +9,18 @@ classdef StateObserver
 
         % State matrix
         Phi = [0.82  0.008  0     0;
-               0     0.82  0     0;
-               0     0     0.78  0.008;
-               0     0     0     0.78];
+               0     0.82   0     0;
+               0     0      0.78  0.008;
+               0     0      0     0.78];
 
         % Input matrix
-        Gamma = [0    0;
+        Gamma = [0        0;
                  0.009    0;
-                 0    0;
-                 0    0.009];
+                 0        0;
+                 0        0.009];
 
         % Output matrix
-        C = [5436.56  0  -6795.7  0];
+        C = [5436.56,  0,  -6795.7, 0];
 
         % System delay
         tau = 0.02; %20 ms
@@ -29,12 +29,19 @@ classdef StateObserver
     properties
         % State vector
         xk_bar_hat (4,1) {mustBeNumeric} = zeros(4,1);
+        PW_history
+        k
     end
 
     methods
         %% Constructor
         function obj = StateObserver(initial_state)
             obj.xk_bar_hat = initial_state;
+            obj.PW_history = [];
+            empty_col_vector = zeros(2, 1);
+            obj.PW_history = [obj.PW_history, empty_col_vector];
+            obj.PW_history = [obj.PW_history, empty_col_vector];
+            obj.k = 1;
         end
 
         %% Generate one time step
@@ -46,6 +53,7 @@ classdef StateObserver
                 obj.c1_ext  * abs(tanh(obj.c2_ext  * PW_e / 2))
             ]; % (2, 1)
 
+            obj.PW_history = [obj.PW_history, u_bar];
             % 4x4 * 4x1       
             % poles = [19.8451, 19.85, 24.8461, 24.85];
             poles = [0.82, 0.81, 0.78, 0.77];
@@ -54,9 +62,11 @@ classdef StateObserver
 
 
             % 4x4 * 4x1 + 4x2 * 2x1 + (4x2 * 1x1) = 4x1
-            next_xk_bar_hat = obj.Phi * obj.xk_bar_hat + obj.Gamma * u_bar + L * (yk - obj.C* obj.xk_bar_hat); % Calculate the next x_bar
+            % next_xk_bar_hat = obj.Phi * obj.xk_bar_hat + obj.Gamma * obj.PW_history(:, obj.k) + L * (yk - obj.C* obj.xk_bar_hat); % Calculate the next x_bar
+            next_xk_bar_hat = obj.Phi * obj.xk_bar_hat + obj.Gamma * u_bar + L * (yk - obj.C* obj.xk_bar_hat);
 
             obj.xk_bar_hat = next_xk_bar_hat; % Update u for next time step
+            obj.k = obj.k+1;
         end
     end
 end
