@@ -6,4 +6,10 @@ function [PW_f, PW_e] = InverseIRC(u_f, u_e)
 
     PW_f = (2 / c2_flex) * atanh(sqrt(u_f^2/c1_flex^2));
     PW_e = (2 / c2_ext) * atanh(sqrt(u_e^2/c1_ext^2));
+
+    if u_f == 0
+        PW_f = 0;
+    elseif u_e == 0
+        PW_e = 0;
+    end
 end

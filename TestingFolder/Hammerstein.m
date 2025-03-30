@@ -29,12 +29,14 @@ classdef Hammerstein
     properties
         % State vector
         xk_bar (4,1) {mustBeNumeric} = zeros(4,1);
+        PW_history
     end
 
     methods
         %% Constructor
         function obj = Hammerstein(initial_state)
             obj.xk_bar = initial_state;
+            obj.PW_history = [];
         end
 
         %% Generate one time step

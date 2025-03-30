@@ -47,7 +47,8 @@ classdef StateObserver
             ]; % (2, 1)
 
             % 4x4 * 4x1       
-            poles = [19.8451, 19.85, 24.8461, 24.85];
+            % poles = [19.8451, 19.85, 24.8461, 24.85];
+            poles = [0.82, 0.81, 0.78, 0.77];
 
             L = place(obj.Phi', obj.C', poles)'; % (4x2)
 

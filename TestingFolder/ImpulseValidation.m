@@ -16,6 +16,8 @@ K = [484.18, 15.4, -518.1, -15.75;
      -559, -162.79, 605.4, 17.1];
 
 reference_force = 1;
+
+output_forces = zeros(1, numSteps);
 %% Simulation Loop
 % We will simulate the discrete system over "numSteps" steps.
 for i = 1:numSteps
@@ -30,7 +32,8 @@ for i = 1:numSteps
     [muscle_model, y] = muscle_model.update(PW_f, PW_e);
 
     observer_model = observer_model.update(PW_f, PW_e, y);
-
+    
+    output_forces(i) = y;
 end
 
 %% Plot the Results
@@ -38,25 +41,9 @@ end
 % Create a time vector for discrete steps
 time = 0:numSteps-1;
 
-% Plot each state: compare true state and observer estimate.
-figure;
-for i = 1:n
-    subplot(n,1,i);
-    plot(time, x_true(i,:), 'b-', 'LineWidth', 2); hold on;
-    plot(time, xhat(i,:), 'r--', 'LineWidth', 2);
-    xlabel('Discrete Time Step');
-    ylabel(['State x', num2str(i)]);
-    legend('True', 'Observer Estimate');
-    title(['State x', num2str(i), ' vs. Observer Estimate']);
-    grid on;
-end
+plot(time, output_forces);
 
-% Plot the output error over time:
-y_true = C * x_true;
-y_hat = C * xhat;
-figure;
-plot(time, y_true - y_hat, 'k-', 'LineWidth', 2);
-xlabel('Discrete Time Step');
-ylabel('Output Error (y_{true} - y_{hat})');
-title('Observer Output Error');
-grid on;
+% Add labels and title
+xlabel('x values');
+ylabel('y values');
+title('Plot of x vs y');
