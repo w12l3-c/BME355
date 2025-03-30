@@ -63,7 +63,7 @@ classdef StateObserver
 
             % 4x4 * 4x1 + 4x2 * 2x1 + (4x2 * 1x1) = 4x1
             % next_xk_bar_hat = obj.Phi * obj.xk_bar_hat + obj.Gamma * obj.PW_history(:, obj.k) + L * (yk - obj.C* obj.xk_bar_hat); % Calculate the next x_bar
-            next_xk_bar_hat = obj.Phi * obj.xk_bar_hat + obj.Gamma * u_bar + L * (yk - obj.C* obj.xk_bar_hat);
+            next_xk_bar_hat = obj.Phi * obj.xk_bar_hat + obj.Gamma * u_bar + L * (yk - obj.C * obj.xk_bar_hat);
 
             obj.xk_bar_hat = next_xk_bar_hat; % Update u for next time step
             obj.k = obj.k+1;

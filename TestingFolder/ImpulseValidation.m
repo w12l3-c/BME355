@@ -14,7 +14,10 @@ prev_y = 0;
 kP = 0.25;
 K = [484.18, 15.4, -518.1, -15.75;
      -559, -162.79, 605.4, 17.1];
-reference_force = 1
+
+
+PW_f = 0;
+PW_e = 1;
 
 output_forces = zeros(1, numSteps);
 %% Simulation Loop
@@ -22,16 +25,13 @@ output_forces = zeros(1, numSteps);
 for i = 1:numSteps
 
     if i ~= 1
-        reference_force = 0;
+        PW_f = 0;
+        PW_e = 0
     end
-
-    [PW_f, PW_e] = FESController(observer_model.xk_bar_hat, reference_force, prev_y, K, kP);
     
     [muscle_model, y] = muscle_model.update(PW_f, PW_e);
-
-    observer_model = observer_model.update(PW_f, PW_e, y);
     
-    output_forces(i) = muscle_model.xk_bar(3);
+    output_forces(i) = y;
     prev_y = y;
 end
 
