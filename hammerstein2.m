@@ -21,6 +21,9 @@ classdef hammerstein2
 
         % Output matrix
         C = [5436.56  0  -6795.7  0];
+
+        % System delay
+        tau = 0.02; %20 ms
     end
 
     properties
@@ -57,7 +60,7 @@ classdef hammerstein2
         %% State update
         function xk1_bar = xk1_bar(obj)
             u = obj.u_bar();  % Get the input vector
-            xk1_bar = obj.Phi * obj.xk_bar + obj.Gamma * u;
+            xk1_bar = obj.Phi * obj.xk_bar + obj.Gamma * u * ();
         end
 
         %% Output (grip force)
