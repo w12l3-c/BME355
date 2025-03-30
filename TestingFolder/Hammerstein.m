@@ -9,18 +9,18 @@ classdef Hammerstein
 
         % State matrix
         Phi = [0.82  0.008  0     0;
-               0     0.82  0     0;
-               0     0     0.78  0.008;
-               0     0     0     0.78];
+               0     0.82   0     0;
+               0     0      0.78  0.008;
+               0     0      0     0.78];
 
         % Input matrix
-        Gamma = [0    0;
-                 0.009    0;
-                 0    0;
-                 0    0.009];
+        Gamma = [0       0;
+                 0.009   0;
+                 0       0;
+                 0       0.009];
 
         % Output matrix
-        C = [5436.56  0  -6795.7  0];
+        C = [5436.56,  0,  -6795.7,  0];
 
         % System delay
         tau = 0.02; %20 ms
@@ -30,6 +30,7 @@ classdef Hammerstein
         % State vector
         xk_bar (4,1) {mustBeNumeric} = zeros(4,1);
         PW_history
+        k
     end
 
     methods
@@ -37,6 +38,10 @@ classdef Hammerstein
         function obj = Hammerstein(initial_state)
             obj.xk_bar = initial_state;
             obj.PW_history = [];
+            empty_col_vector = zeros(2, 1);
+            obj.PW_history = [obj.PW_history, empty_col_vector];
+            obj.PW_history = [obj.PW_history, empty_col_vector];
+            obj.k = 1;
         end
 
         %% Generate one time step
@@ -48,13 +53,17 @@ classdef Hammerstein
                 obj.c1_ext  * abs(tanh(obj.c2_ext  * PW_e / 2))
             ];
 
+            obj.PW_history = [obj.PW_history, u_bar];
+
             % 4x4 * 4x1 + 4x2 * 2*1
-            next_xk_bar = obj.Phi * obj.xk_bar + obj.Gamma * u_bar; % Calculate the next x_bar (4, 1)
+            % next_xk_bar = obj.Phi * obj.xk_bar + obj.Gamma * obj.PW_history(:, obj.k); % Calculate the next x_bar (4, 1)
+            next_xk_bar = obj.Phi * obj.xk_bar + obj.Gamma * u_bar;
     
             % 1x4 * 4*1
             output = obj.C * obj.xk_bar; % Get the force output (1, 1)
 
             obj.xk_bar = next_xk_bar; % Update u for next time step
+            obj.k = obj.k+1;
         end
     end
 end

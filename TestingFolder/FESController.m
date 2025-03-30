@@ -46,7 +46,6 @@ function [PW_f, PW_e] = FESController(x_hat, r, y, K, kP)
         % flexor receives positive control signal
         uf = uc;  
         ue = 0;
-
     else
         % extensor receives the magnitude of the negative control signal
         uf = 0; 
