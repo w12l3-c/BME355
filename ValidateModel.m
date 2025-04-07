@@ -20,7 +20,7 @@ prev_y = 0;
 kP = 0.25;
 K = [484.18, 15.4, -518.1, -15.75;
      -559, -162.79, 605.4, 17.1];
-reference_force = 0
+reference_force = 0;
 output_forces = zeros(1, numSteps);
 
 %% Simulation Loop

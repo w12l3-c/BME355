@@ -21,6 +21,7 @@ classdef Hammerstein
 
         % Output matrix
         C = [5436.56,  0,  -6795.7,  0];
+        % C = [54365.6,  0,  -67957,  0];
 
         % System delay
         tau = 0.02; %20 ms
@@ -52,6 +53,7 @@ classdef Hammerstein
                 obj.c1_flex * abs(tanh(obj.c2_flex * PW_f / 2));
                 obj.c1_ext  * abs(tanh(obj.c2_ext  * PW_e / 2))
             ];
+            fprintf("Recover Ubar: %d\n", u_bar);
 
             obj.PW_history = [obj.PW_history, u_bar];
 
@@ -60,7 +62,7 @@ classdef Hammerstein
             next_xk_bar = obj.Phi * obj.xk_bar + obj.Gamma * u_bar;
     
             % 1x4 * 4*1
-            output = obj.C * obj.xk_bar; % Get the force output (1, 1)
+            output = obj.C * next_xk_bar; % obj.xk_bar; % Get the force output (1, 1)
 
             obj.xk_bar = next_xk_bar; % Update u for next time step
             obj.k = obj.k+1;

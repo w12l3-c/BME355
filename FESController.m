@@ -1,4 +1,4 @@
-function [PW_f, PW_e] = FESController(x_hat, r, y, K, kP)
+function [PW_f, PW_e, i_term, prev_error] = FESController(x_hat, r, y, K, kU, kP, kI, kD, dt, i_term, prev_error)
 % FESController - Compute FES control input for an antagonist muscle pair.
 %
 % Syntax:  u = FESController(x_hat, r, y, K, kP)
@@ -32,15 +32,26 @@ function [PW_f, PW_e] = FESController(x_hat, r, y, K, kP)
 
     % Compute the error between reference and measured force
     error = r - y;
+
+    % Integral term: update using Euler integration
+    integral_term = i_term + error * dt;
+    I = kI * integral_term;
+    
+    % Derivative term: based on difference in error
+    D = kD * (error - prev_error) / dt;
     
     % Compute the state feedback term
     % Then premultiply by [1 -1] to get a scalar intermediate control signal.
+    disp(x_hat);
     u_intermediate = [1, -1] * (-K * x_hat); % (1,1)
     
     % Add the proportional term based on force error (The sum circle)
-    uc = u_intermediate + (kP * error); 
+    uc = kU * u_intermediate + (kP * error) + I + D; %(kP * error) + y;
+    prev_error = error;
     
     % Apply switching rule to separate stimulation for flexor and extensor:
+    fprintf('Error (r-y): %.2f, u_int: %.2f, P: %.2f, I: %.2f, D: %.2f, uc: %.2f\n', ...
+         error, kU*u_intermediate, kP*error, I, D, uc);
 
     if uc >= 0
         % flexor receives positive control signal
@@ -51,6 +62,9 @@ function [PW_f, PW_e] = FESController(x_hat, r, y, K, kP)
         uf = 0; 
         ue = abs(uc); 
     end
+    ubar = [uf ue];
+    ubar = transpose(ubar);
+    fprintf("Generate Ubar: %d\n", ubar);
 
     [PW_f, PW_e] = InverseIRC(uf, ue);
 
