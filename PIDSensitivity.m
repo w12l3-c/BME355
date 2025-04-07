@@ -58,7 +58,7 @@ scatter3(results(:,1), results(:,3), results(:,5), 50, results(:,5), 'filled');
 xlabel('kU');
 ylabel('kI');
 zlabel('Final z displacement (m)');
-title('3D Scatter: kU vs. kI vs. Final z displacement');
+title('3D Scatter: kP vs. kU vs. Final z displacement');
 colorbar;
 grid on;
 
@@ -68,7 +68,7 @@ scatter3(results(:,1), results(:,4), results(:,5), 50, results(:,5), 'filled');
 xlabel('kU');
 ylabel('kD');
 zlabel('Final z displacement (m)');
-title('3D Scatter: kU vs. kD vs. Final z displacement');
+title('3D Scatter: kP vs. kI vs. Final z displacement');
 colorbar;
 grid on;
 
@@ -78,10 +78,45 @@ scatter3(results(:,1), results(:,2), results(:,5), 50, results(:,5), 'filled');
 xlabel('kU');
 ylabel('kP');
 zlabel('Final z displacement (m)');
-title('3D Scatter: kU vs. kP vs. Final z displacement');
+title('3D Scatter: kP vs. kD vs. Final z displacement');
 colorbar;
 grid on;
 
+%% After running the full sweep, filter stable combinations and print them
+
+% 'results' is an N-by-5 matrix where:
+%   Column 1: kU, Column 2: kP, Column 3: kI, Column 4: kD, Column 5: metric (final z displacement)
+% 'stability_flags' is a logical vector of size N indicating stability (true = stable).
+
+% Filter out only the stable combinations
+stable_results = results(stability_flags, :);
+
+fprintf('\nStable PID Combinations (kU, kP, kI, kD, Metric):\n');
+disp(stable_results);
+
+% If there are stable cases, compute the range for each gain
+if ~isempty(stable_results)
+    min_kU = min(stable_results(:,1));
+    max_kU = max(stable_results(:,1));
+    
+    min_kP = min(stable_results(:,2));
+    max_kP = max(stable_results(:,2));
+    
+    min_kI = min(stable_results(:,3));
+    max_kI = max(stable_results(:,3));
+    
+    min_kD = min(stable_results(:,4));
+    max_kD = max(stable_results(:,4));
+    
+    fprintf('Stable kU range: [%.3f, %.3f]\n', min_kU, max_kU);
+    fprintf('Stable kP range: [%.3f, %.3f]\n', min_kP, max_kP);
+    fprintf('Stable kI range: [%.3f, %.3f]\n', min_kI, max_kI);
+    fprintf('Stable kD range: [%.3f, %.3f]\n', min_kD, max_kD);
+else
+    fprintf('No stable combinations found.\n');
+end
+
+%%
 function [metric, isStable] = runGripSim(kU, kP, kI, kD, force_threshold)
     % This function runs the grip simulation for given PID gains and returns:
     %   metric: final z displacement (m)
