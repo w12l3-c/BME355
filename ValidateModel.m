@@ -11,16 +11,22 @@ observer_model = StateObserver(initial_state);
 %% Simulation Parameters
 
 % Get reference forces from Figure 6
+dt = 0.01;
 data = readmatrix("resampled_data.csv");
 time_data = data(:, 1); % Gets array of timepoints
 reference_forces = data(:, 2); % Gets array of reference force data
 
 numSteps = length(time_data);       % Number of discrete time steps
 prev_y = 0;
-kP = 0.25;
+kU = 0;
+kP = 8;
+kI = 100;
+kD = 0.1;
 K = [484.18, 15.4, -518.1, -15.75;
      -559, -162.79, 605.4, 17.1];
 reference_force = 0;
+i_term = 0;  
+prev_error = 0;  
 output_forces = zeros(1, numSteps);
 
 %% Simulation Loop
@@ -31,7 +37,7 @@ for i = 1:numSteps
     reference_force = reference_forces(i);
 
     % Calculates the PW for FES stimulation
-    [PW_f, PW_e] = FESController(observer_model.xk_bar_hat, reference_force, prev_y, K, kP);
+    [PW_f, PW_e, i_term, prev_error] = FESController(observer_model.xk_bar_hat, reference_force, prev_y, K, kU, kP, kI, kD, dt, i_term, prev_error);
     
     % Updates Hammerstein muscle model
     [muscle_model, y] = muscle_model.update(PW_f, PW_e);
@@ -51,8 +57,8 @@ end
 % Create a time vector for discrete steps
 time = 0:numSteps-1;
 
-plot(time, output_forces);
-
+plot(time, output_forces, "b-"); hold on;
+plot(time, reference_forces, "k--");
 % Add labels and title
 xlabel('x values');
 ylabel('y values');
