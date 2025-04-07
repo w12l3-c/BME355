@@ -7,25 +7,6 @@ initial_state = zeros(4, 1);
 muscle_model = Hammerstein(initial_state);
 observer_model = StateObserver(initial_state);
 
-%%
-Phi = [0.82  0.008  0     0;
-       0     0.82   0     0;
-       0     0      0.78  0.008;
-       0     0      0     0.78];
-
-% Input matrix
-Gamma = [0        0;
-         0.009    0;
-         0        0;
-         0        0.009];
-
-% Output matrix
-C = [54.3656,  0,  -67.957, 0];
-
-Q = 1000*(C*C');
-R = eye(size(Gamma, 2));
-[K, s, p] = dlqr(Phi, Gamma, Q, R);
-
 %% Simulation Parameters
 
 % Get reference forces from Figure 6
@@ -35,38 +16,54 @@ reference_forces = data(:, 2); % Gets array of reference force data
 
 numSteps = length(time_data);       % Number of discrete time steps
 prev_y = 0;
-kP = 1.25;
-%   K = [484.18, 15.4, -518.1, -15.75;
-%        -559, -162.79, 605.4, 17.1];
-
+kP = 0.125;
+%K = [484.18, 15.4, -518.1, -15.75;
+%     -559, -162.79, 605.4, 17.1];
 reference_force = 0;
 output_forces = zeros(1, numSteps);
 history_pwf = zeros(1, numSteps+2);
 history_pwe = zeros(1, numSteps+2);
 
-history_pwf(1) = 0;
-history_pwf(1) = 0;
-history_pwe(1) = 0;
-history_pwe(2) = 0;
-
 %% Simulation Loop
 % We will simulate the discrete system over "numSteps" steps.
 for i = 1:numSteps
+    
+    % if i < 150
+    %     desired_force = 10;
+    % else
+    %     desired_force = 0;
+    % end
+    % 
+    % error = desired_force - prev_y;
+    % 
+    % 
+    % if error > 0
+    %     % Activate the flexors
+    %     [PW_f, PW_e] = InverseIRC(desired_force, 0);
+    %     disp("flexor");
+    % else
+    %     % Activate the extensors
+    %     [PW_f, PW_e] = InverseIRC(0, desired_force);
+    %     disp("extensor");
+    % end
 
+
+    if i < 150
+        [PW_f, PW_e] = InverseIRC(10, 0);
+    elseif i < 160
+        [PW_f, PW_e] = InverseIRC(0, 1);
+    else
+        [PW_f, PW_e] = InverseIRC(prev_y, 0);
+    end
+    disp(PW_f);
     % Gets the reference force at the ith sample
-    reference_force = reference_forces(i);
 
-    % Calculates the PW for FES stimulation
-    [PW_f, PW_e] = FESController(observer_model.xk_bar_hat, reference_force, prev_y, K, kP);
-
-    history_pwf(i+2) = PW_f;
-    history_pwe(i+2) = PW_e;
     
     % Updates Hammerstein muscle model
-    [muscle_model, y] = muscle_model.update(history_pwf(i), history_pwe(i));
+    [muscle_model, y] = muscle_model.update(PW_f, PW_e);
 
     % Updates observer model
-    observer_model = observer_model.update(history_pwf(i), history_pwe(i), y);
+    observer_model = observer_model.update(PW_f, PW_e, y);
 
     % Save force output for plotting
     output_forces(i) = y;
@@ -80,9 +77,9 @@ end
 % Create a time vector for discrete steps
 time = 0:numSteps-1;
 
-% plot(time, output_forces, 'b-', time, reference_forces, 'r--');
+plot(time, output_forces, 'b-');
 
-plot(time, history_pwf(1:numSteps), 'b-', time, history_pwe(1:numSteps), 'r--');
+% plot(time, history_pwf(1:numSteps), 'b-', time, history_pwe(1:numSteps), 'r--');
 
 % Add labels and title
 xlabel('x values');

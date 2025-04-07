@@ -20,7 +20,7 @@ classdef StateObserver
                  0        0.009];
 
         % Output matrix
-        C = [5436.56,  0,  -6795.7, 0];
+        C = [543.656,  0,  -679.57, 0];
 
         % System delay
         tau = 0.02; %20 ms
@@ -59,7 +59,6 @@ classdef StateObserver
             poles = [0.82, 0.81, 0.78, 0.77];
 
             L = place(obj.Phi', obj.C', poles)'; % (4x2)
-
 
             % 4x4 * 4x1 + 4x2 * 2x1 + (4x2 * 1x1) = 4x1
             % next_xk_bar_hat = obj.Phi * obj.xk_bar_hat + obj.Gamma * obj.PW_history(:, obj.k) + L * (yk - obj.C* obj.xk_bar_hat); % Calculate the next x_bar

@@ -38,8 +38,9 @@ function [PW_f, PW_e] = FESController(x_hat, r, y, K, kP)
     u_intermediate = [1, -1] * (-K * x_hat); % (1,1)
     
     % Add the proportional term based on force error (The sum circle)
-    uc = u_intermediate + (kP * error); 
-    
+    % uc = u_intermediate + (kP * error); 
+    uc = (kP * error) + y; 
+
     % Apply switching rule to separate stimulation for flexor and extensor:
 
     if uc >= 0
@@ -53,5 +54,5 @@ function [PW_f, PW_e] = FESController(x_hat, r, y, K, kP)
     end
 
     [PW_f, PW_e] = InverseIRC(uf, ue);
-
+    disp(uc);
 end

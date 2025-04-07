@@ -20,7 +20,7 @@ classdef Hammerstein
                  0       0.009];
 
         % Output matrix
-        C = [5436.56,  0,  -6795.7,  0];
+        C = [543.656,  0,  -679.57,  0];
 
         % System delay
         tau = 0.02; %20 ms
