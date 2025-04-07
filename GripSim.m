@@ -19,15 +19,17 @@ dt = 0.01;         % Sampling period (s)
 time_vector = (0:dt:T_total)';
 
 % Define weight and friction ranges
-weights = 50:75:200;    % weights in grams
-frictions = 0.2:0.1:0.3;  % friction coefficients
+weights = 50:75:50;    % weights in grams
+frictions = 0.2:0.1:0.2;  % friction coefficients
 
 g_val = 9.81;  % gravitational acceleration
 alpha_z = 1e-4;  % scaling factor to convert force (N) to upward velocity (m/s)
 F_thresh = 0;    % force threshold
 
 % Controller gains 
-kP = 0.25;
+kP = 2;
+kI = 0:0.5:0.1;
+kD = 0:0.5:0.1;
 K = [484.18, 15.4, -518.1, -15.75;
      -559,   -162.79, 605.4, 17.1];
 
@@ -53,7 +55,7 @@ for w_idx = 1:numW
         F_desired = (m * g_val) / mu;
         
         t_break = [0, 1, 2, 3, 4, 5];   
-        noise_level = 0.05 * F_desired;  
+        noise_level = 0.01 * F_desired;  
         
         F_break = [0, ...
                    F_desired + noise_level * randn, ... 
@@ -62,8 +64,8 @@ for w_idx = 1:numW
                    F_desired + noise_level * randn, ... 
                    0];
 
-        F_ref = interp1(t_break, F_break, time_vector, 'spline');
-        F_ref = awgn(F_ref, 5);    % gaussian
+        F_ref = interp1(t_break, F_break, time_vector, 'pchip');
+        % F_ref = awgn(F_ref, 5);    % gaussian
         
         %% Initialize Models
         initial_state = zeros(4, 1);
@@ -73,6 +75,7 @@ for w_idx = 1:numW
         numSteps = length(time_vector);
         output_forces = zeros(1, numSteps);
         z_disp = zeros(1, numSteps);  % z displacement in m
+        z_vel = zeros(1, numSteps);
         
         prev_y = 0;
         
@@ -85,15 +88,22 @@ for w_idx = 1:numW
             output_forces(i) = y;
             
             % Compute z velocity
-            if y > F_thresh
-                z_dot = alpha_z * (y - F_thresh);
+            if time_vector(i) < 1 | time_vector(i) > 4
+                a_z = 0;
+                z_vel(i) = 0;
             else
-                z_dot = 0;
+                if y < F_thresh
+                    a_z = (y * mu - m * g_val) / m;
+                else
+                    a_z = 0;
+                    z_vel(i) = 0;
+                end
             end
             
             % Update z displacement:
             if i < numSteps
-                z_disp(i+1) = z_disp(i) + z_dot * dt;
+                z_vel(i+1) = z_vel(i) + a_z * dt;
+                z_disp(i+1) = z_disp(i) + z_vel(i+1) * dt;
             end
             
             % Update previous measured force

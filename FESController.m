@@ -1,4 +1,4 @@
-function [PW_f, PW_e] = FESController(x_hat, r, y, K, kP)
+function [PW_f, PW_e] = FESController(x_hat, r, y, K, kP, kI, kD, dt, i_term, prev_error)
 % FESController - Compute FES control input for an antagonist muscle pair.
 %
 % Syntax:  u = FESController(x_hat, r, y, K, kP)
@@ -32,6 +32,9 @@ function [PW_f, PW_e] = FESController(x_hat, r, y, K, kP)
 
     % Compute the error between reference and measured force
     error = r - y;
+    i_term = i_term + error * dt;
+    I = kI * i_term;
+    D = kD * (error - prev_error) / dt; 
     
     % Compute the state feedback term
     % Then premultiply by [1 -1] to get a scalar intermediate control signal.
@@ -39,7 +42,8 @@ function [PW_f, PW_e] = FESController(x_hat, r, y, K, kP)
     
     % Add the proportional term based on force error (The sum circle)
     % uc = u_intermediate + (kP * error); 
-    uc = (kP * error) + y; 
+    pid_value = kp * error + I + D;
+    uc = pid_value + y; 
 
     % Apply switching rule to separate stimulation for flexor and extensor:
 
