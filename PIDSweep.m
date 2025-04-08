@@ -7,7 +7,7 @@ clear; clc; close all;
 
 % Define parameter ranges:
 kU_range = linspace(0, 0, 1);   % Only one value (0)
-kP_range = linspace(2, 2, 1);   % Only one value (2)
+kP_range = linspace(1, 5, 1);   
 kI_range = [0, 3, 10, 100, 500];
 kD_range = [0, 0.01, 0.05, 0.1, 0.5];
 
@@ -16,9 +16,9 @@ T_total = 5;      % Total simulation time in seconds
 dt = 0.01;        % Time step (s)
 time_vector = (0:dt:T_total)';
 
-% kU and kP are constants:
+% kU and kP are constants
 kU = kU_range(1);
-kP = kP_range(1);
+kP = kP_range(2);
 
 numI = length(kI_range);
 numD = length(kD_range);
